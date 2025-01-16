@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Agent } from "@/types";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
+import { toast } from "sonner";
 
 interface ChatAreaProps {
   agent: Agent;
@@ -14,6 +15,7 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  code?: string;
 }
 
 const ChatArea = ({ agent, className }: ChatAreaProps) => {
@@ -33,17 +35,45 @@ const ChatArea = ({ agent, className }: ChatAreaProps) => {
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Simulated AI response
-    setTimeout(() => {
+    try {
+      // Simulated AI response with code generation
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content: `You are ${agent.name}. ${agent.description}. Respond with both explanation and code examples when relevant.`,
+            },
+            { role: "user", content },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get AI response");
+      }
+
+      const data = await response.json();
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `Como ${agent.name}, posso ajudar você com ${content}`,
+        content: data.choices[0].message.content,
         timestamp: new Date(),
       };
+
       setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      toast.error("Failed to get AI response. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
