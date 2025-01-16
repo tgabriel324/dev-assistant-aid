@@ -1,9 +1,10 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Agent } from "@/types";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
 import { toast } from "sonner";
+import { saveConversation, loadConversation } from "@/services/conversation";
 
 interface ChatAreaProps {
   agent: Agent;
@@ -16,11 +17,22 @@ export interface Message {
   content: string;
   timestamp: Date;
   code?: string;
+  language?: string;
 }
 
 const ChatArea = ({ agent, className }: ChatAreaProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const savedMessages = loadConversation(agent.id);
+    if (savedMessages.length > 0) {
+      setMessages(savedMessages.map(msg => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      })));
+    }
+  }, [agent.id]);
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -32,11 +44,16 @@ const ChatArea = ({ agent, className }: ChatAreaProps) => {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    saveConversation(agent.id, updatedMessages);
     setIsLoading(true);
 
     try {
-      // Simulated AI response with code generation
+      const systemPrompt = `You are ${agent.name}. ${agent.description}. 
+        Respond with both explanation and code examples when relevant. 
+        Use markdown code blocks with appropriate language tags for code examples.`;
+
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -44,13 +61,14 @@ const ChatArea = ({ agent, className }: ChatAreaProps) => {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-4",
+          model: "gpt-4o",
           messages: [
-            {
-              role: "system",
-              content: `You are ${agent.name}. ${agent.description}. Respond with both explanation and code examples when relevant.`,
-            },
-            { role: "user", content },
+            { role: "system", content: systemPrompt },
+            ...messages.map(msg => ({
+              role: msg.role,
+              content: msg.content
+            })),
+            { role: "user", content }
           ],
         }),
       });
@@ -67,7 +85,9 @@ const ChatArea = ({ agent, className }: ChatAreaProps) => {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      const finalMessages = [...updatedMessages, aiMessage];
+      setMessages(finalMessages);
+      saveConversation(agent.id, finalMessages);
     } catch (error) {
       console.error("Error getting AI response:", error);
       toast.error("Failed to get AI response. Please try again.");

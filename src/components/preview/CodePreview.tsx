@@ -1,11 +1,19 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import { Play, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { executeCode, supportedLanguages } from "@/services/codeExecutor";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CodePreviewProps {
   className?: string;
@@ -15,42 +23,17 @@ interface CodePreviewProps {
 const CodePreview = ({ className, code = "" }: CodePreviewProps) => {
   const [output, setOutput] = useState<string>("");
   const [isRunning, setIsRunning] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("javascript");
 
-  const executeCode = async () => {
+  const handleExecuteCode = async () => {
     setIsRunning(true);
     try {
-      // Create a sandbox environment for code execution
-      const sandbox = new Function(
-        "console",
-        `
-        try {
-          ${code}
-        } catch (error) {
-          return { error: error.message };
-        }
-      `
-      );
-
-      // Create a mock console to capture outputs
-      let output = "";
-      const mockConsole = {
-        log: (...args: any[]) => {
-          output += args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(" ") + "\n";
-        },
-        error: (...args: any[]) => {
-          output += "Error: " + args.join(" ") + "\n";
-        }
-      };
-
-      const result = sandbox(mockConsole);
-      
-      if (result?.error) {
+      const result = await executeCode(code, selectedLanguage);
+      if (result.error) {
         setOutput(`Error: ${result.error}`);
         toast.error("Code execution failed");
       } else {
-        setOutput(output || "Code executed successfully (no output)");
+        setOutput(result.output || "Code executed successfully (no output)");
         toast.success("Code executed successfully");
       }
     } catch (error) {
@@ -71,26 +54,43 @@ const CodePreview = ({ className, code = "" }: CodePreviewProps) => {
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="console">Console</TabsTrigger>
           </TabsList>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={executeCode}
-            disabled={isRunning || !code}
-          >
-            {isRunning ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
-            <span className="ml-2">Run</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select
+              value={selectedLanguage}
+              onValueChange={setSelectedLanguage}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Language" />
+              </SelectTrigger>
+              <SelectContent>
+                {supportedLanguages.map(lang => (
+                  <SelectItem key={lang.id} value={lang.id}>
+                    {lang.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExecuteCode}
+              disabled={isRunning || !code}
+            >
+              {isRunning ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+              <span className="ml-2">Run</span>
+            </Button>
+          </div>
         </div>
 
         <TabsContent value="code" className="flex-1 p-0 m-0">
           <ScrollArea className="h-full">
             <div className="p-4">
               <SyntaxHighlighter
-                language="javascript"
+                language={selectedLanguage}
                 style={vscDarkPlus}
                 customStyle={{
                   margin: 0,
