@@ -1,41 +1,10 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { Brain, Code2, Layout, Network, Settings } from "lucide-react";
+import { agents } from "@/data/agents";
 import { useState } from "react";
 import ChatArea from "@/components/chat/ChatArea";
 import CodePreview from "@/components/preview/CodePreview";
-
-const agents = [
-  {
-    id: "ui-ux",
-    name: "UI/UX Designer",
-    icon: Layout,
-    description: "Design de interfaces e experiência do usuário"
-  },
-  {
-    id: "frontend",
-    name: "Frontend Dev",
-    icon: Code2,
-    description: "Desenvolvimento frontend com React"
-  },
-  {
-    id: "backend",
-    name: "Backend Dev",
-    icon: Network,
-    description: "APIs e banco de dados"
-  },
-  {
-    id: "architect",
-    name: "Solution Architect",
-    icon: Brain,
-    description: "Arquitetura de sistemas"
-  },
-  {
-    id: "devops",
-    name: "DevOps Engineer",
-    icon: Settings,
-    description: "CI/CD e infraestrutura"
-  }
-];
+import { Link } from "react-router-dom";
+import { Settings } from "lucide-react";
 
 const Index = () => {
   const [selectedAgent, setSelectedAgent] = useState(agents[0]);
@@ -45,7 +14,16 @@ const Index = () => {
       <div className="flex h-screen w-full bg-background">
         <Sidebar>
           <SidebarHeader className="border-b border-border/5 px-4 py-2">
-            <h2 className="text-lg font-semibold">AI Dev Assistant</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">AI Dev Assistant</h2>
+              <Link 
+                to="/admin" 
+                className="p-2 hover:bg-accent rounded-md"
+                title="Configurações"
+              >
+                <Settings className="h-5 w-5" />
+              </Link>
+            </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>

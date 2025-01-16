@@ -1,4 +1,4 @@
-import { Brain, Code2, Layout, Network, Settings, Database, Shield, Cpu } from "lucide-react";
+import { Brain, Code2, Layout, Network, Settings, Database, Shield, Cpu, Bot, Globe, Lock, Cloud } from "lucide-react";
 import { Agent } from "@/types";
 
 export const agents: Agent[] = [
@@ -49,5 +49,29 @@ export const agents: Agent[] = [
     name: "AI Engineer",
     icon: Cpu,
     description: "Integração de IA, machine learning e processamento de linguagem natural."
+  },
+  {
+    id: "chatbot",
+    name: "Chatbot Specialist",
+    icon: Bot,
+    description: "Desenvolvimento de chatbots e assistentes virtuais inteligentes."
+  },
+  {
+    id: "web3",
+    name: "Web3 Developer",
+    icon: Globe,
+    description: "Desenvolvimento de aplicações descentralizadas e smart contracts."
+  },
+  {
+    id: "auth",
+    name: "Auth Specialist",
+    icon: Lock,
+    description: "Implementação de sistemas de autenticação e autorização seguros."
+  },
+  {
+    id: "cloud",
+    name: "Cloud Architect",
+    icon: Cloud,
+    description: "Arquitetura e implementação de soluções em nuvem."
   }
 ];
