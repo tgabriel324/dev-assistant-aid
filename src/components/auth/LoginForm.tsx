@@ -24,9 +24,15 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // Simulated login check
-      if (loginEmail === "admin@example.com" && loginPassword === "admin") {
+      // Check for admin credentials or registered user
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const isValidUser = loginEmail === "admin@example.com" && loginPassword === "admin" ||
+                         users.some((user: {email: string, password: string}) => 
+                           user.email === loginEmail && user.password === loginPassword);
+
+      if (isValidUser) {
         localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("currentUser", loginEmail);
         toast.success("Login successful!");
         navigate("/");
       } else {
@@ -50,14 +56,29 @@ const LoginForm = () => {
         return;
       }
 
-      // Simulate signup success
-      toast.success("Account created successfully! Please login.");
-      // Reset signup form
-      setSignupEmail("");
-      setSignupPassword("");
-      setSignupConfirmPassword("");
+      // Get existing users or initialize empty array
+      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+      
+      // Check if user already exists
+      if (existingUsers.some((user: {email: string}) => user.email === signupEmail)) {
+        toast.error("User already exists");
+        return;
+      }
+
+      // Add new user
+      const newUser = { email: signupEmail, password: signupPassword };
+      existingUsers.push(newUser);
+      localStorage.setItem("users", JSON.stringify(existingUsers));
+
+      // Auto login after signup
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("currentUser", signupEmail);
+
+      toast.success("Account created successfully!");
+      navigate("/");
     } catch (error) {
       toast.error("Signup failed");
+      console.error("Signup error:", error);
     } finally {
       setIsLoading(false);
     }
