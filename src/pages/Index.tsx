@@ -16,7 +16,7 @@ const Index = () => {
         <Sidebar>
           <SidebarHeader className="border-b border-border/5 px-4 py-2">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">AI Dev Assistant</h2>
+              <h2 className="text-lg font-semibold">Ditho Construction</h2>
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <Link 
