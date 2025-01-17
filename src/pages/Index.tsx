@@ -5,6 +5,7 @@ import ChatArea from "@/components/chat/ChatArea";
 import CodePreview from "@/components/preview/CodePreview";
 import { Link } from "react-router-dom";
 import { Settings } from "lucide-react";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 const Index = () => {
   const [selectedAgent, setSelectedAgent] = useState(agents[0]);
@@ -16,18 +17,21 @@ const Index = () => {
           <SidebarHeader className="border-b border-border/5 px-4 py-2">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">AI Dev Assistant</h2>
-              <Link 
-                to="/admin" 
-                className="p-2 hover:bg-accent rounded-md"
-                title="Configurações"
-              >
-                <Settings className="h-5 w-5" />
-              </Link>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <Link 
+                  to="/admin" 
+                  className="p-2 hover:bg-accent rounded-md"
+                  title="Settings"
+                >
+                  <Settings className="h-5 w-5" />
+                </Link>
+              </div>
             </div>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Agentes</SidebarGroupLabel>
+              <SidebarGroupLabel>Agents</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {agents.map((agent) => (
